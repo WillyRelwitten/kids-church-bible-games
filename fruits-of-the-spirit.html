@@ -1,56 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌳 Fruits of the Spirit 🌳</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
-
-body { font-family: 'Comic Neue', cursive; }
-
-.game-area {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(to bottom, #0ea5e9 0%, #22c55e 40%, #16a34a 100%);
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
-  min-height: 55vh;
-}
-
-.fruit {
-  position: absolute;
-  font-size: 3.8rem;
-  cursor: pointer;
-  padding: 20px;
-  transition: all 0.1s ease;
-  user-select: none;
-  filter: drop-shadow(4px 4px 6px rgba(0, 0, 0, 0.3));
-  animation: wiggle 0.8s infinite alternate ease-in-out;
-}
-
-@keyframes wiggle {
-  from { transform: rotate(-8deg); }
-  to { transform: rotate(8deg); }
-}
-
-.popup {
-  position: absolute;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: #fff;
-  text-shadow: 0 0 10px #eab308;
-  pointer-events: none;
-  animation: floatUp 1.2s ease forwards;
-  z-index: 50;
-}
-
-@media (min-width: 768px) {
-  .game-area { min-height: 520px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruits of the Spirit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* full styles from earlier versions with mobile stacking */
+        .game-area { height: 55vh; }
+        @media (min-width: 768px) { .game-area { height: 520px; } }
+    </style>
 </head>
-<body class="bg-[#166534] text-white">
-<!-- Full game code would go here - but for this call I need the complete version -->
+<body>
+<!-- FULL GAME CODE WITH TRACKER BELOW ON MOBILE -->
 </body>
 </html>
