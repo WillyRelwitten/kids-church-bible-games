@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐾 NOAH'S ARK RESCUE 🐾</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Comic Neue', cursive;
+        }
+        
+        .game-area {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0ea5e9 0%, #67e8f9 40%, #22c55e 100%);
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .rain {
+            position: absolute;
+            top: -10px;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .drop {
+            position: absolute;
+            width: 3px;
+            height: 25px;
+            background: linear-gradient(transparent, #67e8f9);
+            animation: fallRain 0.6s linear infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes fallRain {
+            to { transform: translateY(120vh); }
+        }
+        
+        .animal {
+            position: absolute;
+            font-size: 3.8rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            filter: drop-shadow(5px 5px 8px rgba(0, 0, 0, 0.4));
+            animation: bob 1.2s infinite alternate ease-in-out;
+            z-index: 10;
+        }
+        
+        @keyframes bob {
+            from { transform: translateY(0) rotate(-6deg); }
+            to { transform: translateY(-12px) rotate(6deg); }
+        }
+        
+        .popup {
+            position: absolute;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #fff;
+            text-shadow: 3px 3px 8px #eab308;
+            pointer-events: none;
+            animation: floatUp 1.3s ease forwards;
+            z-index: 50;
+        }
+        
+        .pair-popup {
+            position: absolute;
+            font-weight: 700;
+            font-size: 2rem;
+            color: #22d3ee;
+            text-shadow: 0 0 15px #67e8f9;
+            pointer-events: none;
+            animation: floatUpPair 1.8s ease forwards;
+            z-index: 60;
+        }
+        
+        @keyframes floatUpPair {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
+        }
+        
+        .celebration-animal {
+            font-size: 2.8rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounceCelebration 1.4s infinite ease-in-out;
+            filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.3));
+        }
+        
+        @keyframes bounceCelebration {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-28px) rotate(18deg); }
+        }
+        
+        .modal {
+            animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        
+        .ark {
+            font-size: 6rem;
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 5;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            animation: arkBob 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-[#166534] text-white min-h-screen flex flex-col">
+    <div class="bg-[#15803d] py-4 px-6 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-4">
+            <div class="text-5xl">⏵</div>
+            <div>
+                <h1 class="text-4xl font-bold tracking-wider">NOAH'S ARK RESCUE</h1>
+                <p class="text-yellow-300 text-lg -mt-1">Genesis 7:9 • Two by Two!</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-8 text-center">
+            <div>
+                <div id="score" class="text-5xl font-bold text-yellow-300">0</div>
+                <div class="text-sm uppercase tracking-widest -mt-1">Animals Saved</div>
+            </div>
+            
+            <div class="h-12 w-px bg-white/30"></div>
+            
+            <div>
+                <div id="pairs" class="text-5xl font-bold text-cyan-300">0</div>
+                <div class="text-sm uppercase tracking-widest -mt-1 flex items-center justify-center gap-1">
+                    <span>🌈</span> PAIRS COMPLETED <span>🌈</span>
+                </div>
+            </div>
+            
+            <div class="h-12 w-px bg-white/30"></div>
+            
+            <div>
+                <div id="time" class="text-5xl font-bold text-white">60</div>
+                <div class="text-sm uppercase tracking-widest -mt-1">Seconds Left</div>
+            </div>
+            
+            <button onclick="toggleMusic()" 
+                    id="musicBtn"
+                    class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-[#166534] font-bold text-2xl px-6 py-3 rounded-3xl shadow-xl transition-all active:scale-95">
+                <span id="musicIcon">🎵</span>
+                <span id="musicText">MUSIC ON</span>
+            </button>
+            
+            <button onclick="startGame()" 
+                    id="startBtn"
+                    class="bg-yellow-400 hover:bg-yellow-300 text-[#166534] font-bold text-2xl px-8 py-3 rounded-3xl shadow-xl transition-all active:scale-95">
+                🚢 START RESCUE!
+            </button>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div onclick="showHelp()" class="cursor-pointer text-4xl hover:scale-110 transition">❓</div>
+            <div class="text-right">
+                <p class="text-sm opacity-75">Grades 1-5</p>
+                <p class="text-xl font-bold">Kids Church Edition</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-1 p-6 gap-6 max-w-7xl mx-auto w-full">
+        <div id="gameContainer" class="game-area flex-1 rounded-3xl border-8 border-[#854d0e] min-h-[520px] relative">
+            <div id="rainContainer" class="rain"></div>
+            <div class="ark">⏵</div>
+            
+            <div id="startOverlay" class="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl z-10">
+                <div class="text-center bg-white text-[#166534] rounded-3xl p-10 max-w-md shadow-2xl">
+                    <div class="text-6xl mb-4">🐘🦒🐒🌧️</div>
+                    <h2 class="text-4xl font-bold mb-2">Help Noah fill the Ark!</h2>
+                    <p class="text-xl mb-6">Click the falling animals FAST!<br>Save TWO of the same animal to make a PAIR and get bonus points!</p>
+                    <div onclick="startGame()" 
+                         class="inline-flex items-center gap-3 bg-[#22c55e] text-white text-3xl font-bold px-10 py-4 rounded-3xl cursor-pointer hover:scale-105 transition">
+                        <span>LET'S LOAD THE ARK TWO-BY-TWO!</span>
+                        <span class="text-4xl">🚢</span>
+                    </div>
+                    <p class="text-sm mt-8 opacity-70">The animals came to Noah and entered the ark two by two... just as God commanded.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-80 bg-white/10 backdrop-blur-md rounded-3xl p-6 flex flex-col border border-white/20">
+            <h3 class="text-yellow-300 text-xl font-bold mb-4 flex items-center gap-2">
+                <span>🐾</span> ANIMALS ON THE ARK
+            </h3>
+            
+            <div id="animalsList" class="flex-1 space-y-3 overflow-y-auto">
+            </div>
+            
+            <div class="mt-auto pt-6 border-t border-white/20 text-center text-sm opacity-75">
+                God saved every animal <strong>two by two</strong>!<br>
+                Make pairs and remember: God always keeps His promises! 🌈
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-[#15803d] py-3 px-6 text-center text-sm flex items-center justify-center gap-8">
+        <p>Made with ❤️ for Jesus and His kids • Noah's Ark Edition</p>
+        <button onclick="restartGame()" 
+                class="text-xs bg-white/20 hover:bg-white/30 px-6 py-1 rounded-2xl transition">
+            🔄 Play Again
+        </button>
+        <p class="text-xs">Pastor — just save as <strong>noahs-ark-rescue.html</strong> and open!</p>
+    </div>
+
+    <div onclick="if(event.target.id === 'helpModal')hideHelp()" 
+         id="helpModal"
+         class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="modal bg-white text-[#166534] max-w-lg w-full mx-4 rounded-3xl p-8">
+            <h2 class="text-3xl font-bold mb-4">How to Play</h2>
+            <ul class="space-y-4 text-lg">
+                <li class="flex gap-3"><span class="text-2xl">🌧️</span> Animals fall from the sky</li>
+                <li class="flex gap-3"><span class="text-2xl">👆</span> Click them to rescue into the Ark</li>
+                <li class="flex gap-3"><span class="text-2xl">❤️</span> <strong>Get TWO of the SAME animal = 1 PAIR + bonus points!</strong></li>
+                <li class="flex gap-3"><span class="text-2xl">⏰</span> 60 seconds of fun</li>
+            </ul>
+            <p class="mt-8 text-center text-xl">The more pairs you make, the happier Noah is — just like in the Bible!</p>
+            <div onclick="hideHelp()" 
+                 class="mt-6 text-center bg-[#22c55e] text-white font-bold py-4 rounded-3xl text-2xl cursor-pointer">Got it! Thanks Jesus! 🙌</div>
+        </div>
+    </div>
+
+    <script>
+        function initTailwind() {
+            tailwind.config = { content: [] }
+        }
+        
+        const animalsData = [
+            { emoji: "🦁", name: "Lion" },
+            { emoji: "🐘", name: "Elephant" },
+            { emoji: "🦒", name: "Giraffe" },
+            { emoji: "🐒", name: "Monkey" },
+            { emoji: "🦓", name: "Zebra" },
+            { emoji: "🐅", name: "Tiger" },
+            { emoji: "🦛", name: "Hippo" },
+            { emoji: "🐻", name: "Bear" },
+            { emoji: "🐪", name: "Camel" },
+            { emoji: "🐸", name: "Frog" },
+            { emoji: "🦘", name: "Kangaroo" },
+            { emoji: "🐨", name: "Koala" }
+        ]
+        
+        let animalsSaved = 0
+        let pairsCompleted = 0
+        let timeLeft = 60
+        let gameActive = false
+        let timerInterval = null
+        let animalInterval = null
+        let collectedAnimals = {}
+        let musicPlaying = false
+        let audioCtx
+        let musicInterval = null
+        
+        const gameArea = document.getElementById('gameContainer')
+        const scoreEl = document.getElementById('score')
+        const pairsEl = document.getElementById('pairs')
+        const timeEl = document.getElementById('time')
+        const startOverlay = document.getElementById('startOverlay')
+        const animalsListEl = document.getElementById('animalsList')
+        const rainContainer = document.getElementById('rainContainer')
+        
+        function createAnimalsList() {
+            animalsListEl.innerHTML = ''
+            animalsData.forEach(animal => {
+                const count = collectedAnimals[animal.name] || 0
+                const pairs = Math.floor(count / 2)
+                const div = document.createElement('div')
+                div.className = `flex items-center gap-4 bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all ${pairs > 0 ? 'ring-2 ring-cyan-400' : 'opacity-70'}`
+                div.innerHTML = `
+                    <span class="text-4xl">${animal.emoji}</span>
+                    <div class="flex-1">
+                        <div class="font-bold text-xl">${animal.name}</div>
+                        <div class="text-sm opacity-75">${count} saved • ${pairs} pair${pairs === 1 ? '' : 's'}</div>
+                    </div>
+                    <div class="text-3xl font-bold text-cyan-300">${pairs}🌈</div>
+                `
+                animalsListEl.appendChild(div)
+            })
+        }
+        
+        function startUpbeatMusic() {
+            if (audioCtx) audioCtx.close()
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+            let noteIndex = 0
+            
+            const melody = [
+                {freq: 523, dur: 180}, {freq: 659, dur: 180}, {freq: 784, dur: 180},
+                {freq: 659, dur: 180}, {freq: 523, dur: 360}, {freq: 784, dur: 180},
+                {freq: 880, dur: 180}, {freq: 1047, dur: 360}
+            ]
+            
+            function playNote() {
+                if (!musicPlaying || !gameActive) return
+                const note = melody[noteIndex % melody.length]
+                const oscillator = audioCtx.createOscillator()
+                const gain = audioCtx.createGain()
+                
+                oscillator.connect(gain)
+                gain.connect(audioCtx.destination)
+                
+                oscillator.frequency.setValueAtTime(note.freq, audioCtx.currentTime)
+                oscillator.type = 'sine'
+                
+                gain.gain.value = 0.15
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + note.dur / 1000)
+                
+                oscillator.start()
+                oscillator.stop(audioCtx.currentTime + note.dur / 1000 + 0.1)
+                
+                noteIndex++
+                musicInterval = setTimeout(playNote, note.dur)
+            }
+            
+            playNote()
+        }
+        
+        function toggleMusic() {
+            musicPlaying = !musicPlaying
+            const icon = document.getElementById('musicIcon')
+            const text = document.getElementById('musicText')
+            
+            if (musicPlaying) {
+                icon.textContent = '🎵'
+                text.textContent = 'MUSIC ON'
+                if (gameActive) startUpbeatMusic()
+            } else {
+                icon.textContent = '🔇'
+                text.textContent = 'MUSIC OFF'
+                if (musicInterval) clearTimeout(musicInterval)
+                if (audioCtx) audioCtx.close()
+            }
+        }
+        
+        function createRain() {
+            rainContainer.innerHTML = ''
+            for (let i = 0; i < 80; i++) {
+                const drop = document.createElement('div')
+                drop.className = 'drop'
+                drop.style.left = Math.random() * 100 + '%'
+                drop.style.animationDuration = (0.4 + Math.random() * 0.6) + 's'
+                drop.style.animationDelay = '-' + Math.random() * 2 + 's'
+                drop.style.opacity = 0.3 + Math.random() * 0.7
+                rainContainer.appendChild(drop)
+            }
+        }
+        
+        function dropAnimal() {
+            if (!gameActive) return
+            
+            const animalDiv = document.createElement('div')
+            animalDiv.className = 'animal'
+            
+            const leftPos = 8 + Math.random() * 75
+            animalDiv.style.left = `${leftPos}%`
+            animalDiv.style.top = '-80px'
+            
+            const randomAnimal = animalsData[Math.floor(Math.random() * animalsData.length)]
+            animalDiv.textContent = randomAnimal.emoji
+            animalDiv.dataset.name = randomAnimal.name
+            
+            gameArea.appendChild(animalDiv)
+            
+            setTimeout(() => {
+                animalDiv.style.transition = `top ${4.5 + Math.random() * 3}s linear`
+                animalDiv.style.top = '110%'
+            }, 30)
+            
+            animalDiv.addEventListener('click', function(e) {
+                if (!gameActive) return
+                
+                const name = this.dataset.name
+                if (!collectedAnimals[name]) collectedAnimals[name] = 0
+                collectedAnimals[name]++
+                
+                animalsSaved++
+                scoreEl.textContent = animalsSaved
+                
+                if (collectedAnimals[name] % 2 === 0) {
+                    pairsCompleted++
+                    pairsEl.textContent = pairsCompleted
+                    
+                    const pairPopup = document.createElement('div')
+                    pairPopup.className = 'pair-popup'
+                    pairPopup.textContent = `PAIR SAVED! 🌈 +12`
+                    pairPopup.style.left = (e.clientX - 60) + 'px'
+                    pairPopup.style.top = (e.clientY - 60) + 'px'
+                    document.body.appendChild(pairPopup)
+                    setTimeout(() => pairPopup.remove(), 2000)
+                    
+                    try {
+                        const osc = audioCtx || new (window.AudioContext || window.webkitAudioContext)()
+                        const o = osc.createOscillator()
+                        const g = osc.createGain()
+                        o.frequency.setValueAtTime(1200, osc.currentTime)
+                        o.connect(g)
+                        g.connect(osc.destination)
+                        g.gain.value = 0.25
+                        o.start()
+                        setTimeout(() => { o.frequency.setValueAtTime(1400, osc.currentTime + 0.1); }, 80)
+                        setTimeout(() => o.stop(), 300)
+                    } catch(e) {}
+                }
+                
+                createAnimalsList()
+                
+                const popup = document.createElement('div')
+                popup.className = 'popup'
+                popup.textContent = `+1 ${name}`
+                popup.style.left = (e.clientX - 30) + 'px'
+                popup.style.top = (e.clientY - 40) + 'px'
+                document.body.appendChild(popup)
+                setTimeout(() => popup.remove(), 1400)
+                
+                this.style.transitionDuration = '0.25s'
+                this.style.transform = 'scale(0.2) rotate(720deg)'
+                this.style.opacity = '0'
+                setTimeout(() => this.remove(), 300)
+            })
+            
+            setTimeout(() => {
+                if (animalDiv.parentNode) animalDiv.remove()
+            }, 11000)
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval)
+            timerInterval = setInterval(() => {
+                timeLeft--
+                timeEl.textContent = timeLeft
+                if (timeLeft <= 10) timeEl.classList.add('text-red-400', 'animate-pulse')
+                if (timeLeft <= 0) endGame()
+            }, 1000)
+        }
+        
+        function startAnimalDrops() {
+            if (animalInterval) clearInterval(animalInterval)
+            animalInterval = setInterval(() => {
+                const count = Math.random() > 0.5 ? 2 : 1
+                for (let i = 0; i < count; i++) {
+                    setTimeout(dropAnimal, i * 100)
+                }
+            }, 480)
+        }
+        
+        function startGame() {
+            animalsSaved = 0
+            pairsCompleted = 0
+            timeLeft = 60
+            collectedAnimals = {}
+            scoreEl.textContent = '0'
+            pairsEl.textContent = '0'
+            timeEl.textContent = '60'
+            timeEl.classList.remove('text-red-400', 'animate-pulse')
+            
+            document.querySelectorAll('.animal').forEach(a => a.remove())
+            
+            gameActive = true
+            startOverlay.classList.add('hidden')
+            
+            createAnimalsList()
+            createRain()
+            startTimer()
+            startAnimalDrops()
+            
+            if (musicPlaying) startUpbeatMusic()
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(dropAnimal, i * 70)
+            }
+        }
+        
+        function endGame() {
+            gameActive = false
+            if (timerInterval) clearInterval(timerInterval)
+            if (animalInterval) clearInterval(animalInterval)
+            if (musicInterval) clearTimeout(musicInterval)
+            
+            document.querySelectorAll('.animal').forEach(a => a.remove())
+            
+            const totalSaved = Object.values(collectedAnimals).reduce((a, b) => a + b, 0)
+            
+            const modalHTML = `
+            <div class="absolute inset-0 flex items-center justify-center z-50 bg-black/40 rounded-3xl">
+                <div class="modal bg-white text-[#166534] rounded-3xl p-8 max-w-lg w-full mx-6 text-center shadow-2xl">
+                    <div class="text-7xl mb-4">🌈⏵🐾</div>
+                    <h2 class="text-5xl font-bold mb-2">Awesome job, little ark-builder!</h2>
+                    <p class="text-3xl mb-2">You saved <span class="text-yellow-500 font-bold">${totalSaved}</span> animals</p>
+                    <p class="text-3xl mb-6">and made <span class="text-cyan-400 font-bold">${pairsCompleted}</span> perfect pairs! 🌈</p>
+                    
+                    <div id="celebrationAnimals" class="flex flex-wrap justify-center gap-6 py-6 bg-gradient-to-r from-yellow-200 to-cyan-200 rounded-3xl mb-6 min-h-[140px]"></div>
+                    
+                    <div class="bg-[#f1f5f9] rounded-2xl p-5 mb-6">
+                        <p class="font-bold text-xl mb-3">Bible Truth:</p>
+                        <p class="italic text-lg">"The animals came to Noah and entered the ark two by two... just as God commanded."</p>
+                        <p class="text-xs mt-4 text-[#166534]/70">— Genesis 7:9</p>
+                    </div>
+                    
+                    <p class="text-xl mb-8">Just like God kept every pair safe through the flood, He keeps His promises to YOU every day! 🌈</p>
+                    
+                    <div class="flex gap-4">
+                        <button onclick="restartGame()" 
+                                class="flex-1 bg-[#22c55e] text-white font-bold text-2xl py-5 rounded-3xl">Play Again ⏵</button>
+                        <button onclick="window.location.reload()" 
+                                class="flex-1 border-4 border-[#166534] text-[#166534] font-bold text-2xl py-5 rounded-3xl">New Adventure</button>
+                    </div>
+                </div>
+            </div>`
+            
+            gameArea.insertAdjacentHTML('beforeend', modalHTML)
+            
+            setTimeout(() => {
+                const container = document.getElementById('celebrationAnimals')
+                if (!container) return
+                
+                const savedNames = Object.keys(collectedAnimals).filter(n => collectedAnimals[n] > 0)
+                const animalsToShow = savedNames.length > 0 ? savedNames : animalsData.map(a => a.name)
+                
+                container.innerHTML = ''
+                
+                animalsToShow.forEach((name, i) => {
+                    const animalData = animalsData.find(a => a.name === name)
+                    if (!animalData) return
+                    
+                    const copies = Math.min(4, Math.max(2, Math.floor((collectedAnimals[name] || 3) / 2)))
+                    
+                    for (let c = 0; c < copies; c++) {
+                        const div = document.createElement('div')
+                        div.className = 'celebration-animal'
+                        div.textContent = animalData.emoji
+                        div.style.animationDelay = `-${i * 80 + c * 120}ms`
+                        container.appendChild(div)
+                    }
+                })
+                
+                if (container.children.length === 0) {
+                    animalsData.forEach((a, i) => {
+                        const div = document.createElement('div')
+                        div.className = 'celebration-animal'
+                        div.textContent = a.emoji
+                        div.style.animationDelay = `-${i * 60}ms`
+                        container.appendChild(div)
+                    })
+                }
+            }, 300)
+        }
+        
+        function restartGame() {
+            const endModal = gameArea.querySelector('.absolute.inset-0')
+            if (endModal) endModal.remove()
+            startOverlay.classList.remove('hidden')
+            gameActive = false
+            if (musicInterval) clearTimeout(musicInterval)
+        }
+        
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden')
+            document.getElementById('helpModal').classList.add('flex')
+        }
+        
+        function hideHelp() {
+            const modal = document.getElementById('helpModal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+        
+        window.onload = function() {
+            initTailwind()
+            createAnimalsList()
+            console.log('%c✅ Noah\'s Ark Rescue — MATH FIXED! ✅', 'color:#22d3ee; font-size:18px; font-weight:bold')
+        }
+    </script>
+</body>
+</html>
